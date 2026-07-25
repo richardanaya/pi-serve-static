@@ -1,0 +1,43 @@
+{
+  "name": "pi-serve",
+  "version": "0.1.0",
+  "description": "A pi extension that serves the current working directory over a local static HTTP server (/serve-start, /serve-stop)",
+  "license": "MIT",
+  "author": "Richard Anaya",
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "files": [
+    "index.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "echo 'Ready to publish'"
+  },
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.82.1",
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pi",
+    "cli",
+    "tui",
+    "static-server",
+    "http",
+    "preview",
+    "browser",
+    "local-server"
+  ]
+}
