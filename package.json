@@ -3,18 +3,26 @@
   "version": "0.1.0",
   "description": "A pi extension that serves the current working directory over a local static HTTP server (/serve-start, /serve-stop)",
   "license": "MIT",
-  "author": "Richard Anaya",
+  "author": "Richard Anaya <richard.anaya@gmail.com>",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",
   "files": [
     "index.ts",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublishOnly": "echo 'Ready to publish'"
+    "prepublishOnly": "node --input-type=module -e \"import fs from 'node:fs'; fs.accessSync('index.ts')\""
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardanaya/pi-serve.git"
+  },
+  "bugs": {
+    "url": "https://github.com/richardanaya/pi-serve/issues"
+  },
+  "homepage": "https://github.com/richardanaya/pi-serve#readme",
   "pi": {
     "extensions": [
       "./index.ts"
@@ -39,5 +47,8 @@
     "preview",
     "browser",
     "local-server"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

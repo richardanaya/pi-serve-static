@@ -80,7 +80,10 @@ function contentType(filePath: string): string {
 function safeJoin(root: string, urlPath: string): string | null {
 	const decoded = decodeURIComponent(urlPath.split("?")[0] ?? "/");
 	const cleaned = path.normalize(decoded).replace(/^(\.\.(\/|\\|$))+/, "");
-	const full = path.resolve(root, "." + (cleaned.startsWith("/") ? cleaned : `/${cleaned}`));
+	const full = path.resolve(
+		root,
+		"." + (cleaned.startsWith("/") ? cleaned : `/${cleaned}`),
+	);
 	const rootResolved = path.resolve(root);
 	if (full !== rootResolved && !full.startsWith(rootResolved + path.sep)) {
 		return null;
@@ -115,7 +118,8 @@ function directoryListing(dirPath: string, urlPath: string): string {
 	for (const ent of entries) {
 		if (ent.name.startsWith(".")) continue;
 		const name = ent.isDirectory() ? `${ent.name}/` : ent.name;
-		const href = path.posix.join(base, ent.name) + (ent.isDirectory() ? "/" : "");
+		const href =
+			path.posix.join(base, ent.name) + (ent.isDirectory() ? "/" : "");
 		rows.push(`<li><a href="${escapeHtml(href)}">${escapeHtml(name)}</a></li>`);
 	}
 
@@ -146,66 +150,102 @@ ${rows.join("\n")}
 </html>`;
 }
 
+function sendText(
+	res: http.ServerResponse,
+	status: number,
+	body: string,
+	headers?: Record<string, string>,
+): void {
+	res.writeHead(status, headers);
+	res.end(body);
+}
+
+function sendHtml(
+	res: http.ServerResponse,
+	method: string,
+	html: string,
+): void {
+	res.writeHead(200, {
+		"Content-Type": "text/html; charset=utf-8",
+		"Cache-Control": "no-cache",
+	});
+	res.end(method === "HEAD" ? undefined : html);
+}
+
+function sendFile(
+	res: http.ServerResponse,
+	method: string,
+	filePath: string,
+	size: number,
+): void {
+	res.writeHead(200, {
+		"Content-Type": contentType(filePath),
+		"Content-Length": size,
+		"Cache-Control": "no-cache",
+	});
+	if (method === "HEAD") {
+		res.end();
+		return;
+	}
+	fs.createReadStream(filePath).pipe(res);
+}
+
+/** Prefer index.html inside a directory; otherwise null (caller lists dir). */
+function resolveIndex(dirPath: string): { path: string; size: number } | null {
+	const indexHtml = path.join(dirPath, "index.html");
+	if (!fs.existsSync(indexHtml)) return null;
+	const st = fs.statSync(indexHtml);
+	if (!st.isFile()) return null;
+	return { path: indexHtml, size: st.size };
+}
+
+function handleRequest(
+	root: string,
+	req: http.IncomingMessage,
+	res: http.ServerResponse,
+): void {
+	const method = req.method ?? "GET";
+	if (method !== "GET" && method !== "HEAD") {
+		sendText(res, 405, "Method Not Allowed", { Allow: "GET, HEAD" });
+		return;
+	}
+
+	const urlPath = req.url ?? "/";
+	const filePath = safeJoin(root, urlPath);
+	if (!filePath) {
+		sendText(res, 403, "Forbidden");
+		return;
+	}
+	if (!fs.existsSync(filePath)) {
+		sendText(res, 404, "Not Found");
+		return;
+	}
+
+	const stat = fs.statSync(filePath);
+	if (stat.isDirectory()) {
+		const index = resolveIndex(filePath);
+		if (index) {
+			sendFile(res, method, index.path, index.size);
+			return;
+		}
+		const listingPath = decodeURIComponent(urlPath.split("?")[0] ?? "/");
+		sendHtml(res, method, directoryListing(filePath, listingPath));
+		return;
+	}
+
+	sendFile(res, method, filePath, stat.size);
+}
+
 function createStaticServer(root: string): http.Server {
 	return http.createServer((req, res) => {
 		try {
-			const method = req.method ?? "GET";
-			if (method !== "GET" && method !== "HEAD") {
-				res.writeHead(405, { Allow: "GET, HEAD" });
-				res.end("Method Not Allowed");
-				return;
-			}
-
-			const urlPath = req.url ?? "/";
-			let filePath = safeJoin(root, urlPath);
-			if (!filePath) {
-				res.writeHead(403);
-				res.end("Forbidden");
-				return;
-			}
-
-			if (!fs.existsSync(filePath)) {
-				res.writeHead(404);
-				res.end("Not Found");
-				return;
-			}
-
-			let stat = fs.statSync(filePath);
-
-			if (stat.isDirectory()) {
-				const indexHtml = path.join(filePath, "index.html");
-				if (fs.existsSync(indexHtml) && fs.statSync(indexHtml).isFile()) {
-					filePath = indexHtml;
-					stat = fs.statSync(filePath);
-				} else {
-					const html = directoryListing(filePath, decodeURIComponent(urlPath.split("?")[0] ?? "/"));
-					res.writeHead(200, {
-						"Content-Type": "text/html; charset=utf-8",
-						"Cache-Control": "no-cache",
-					});
-					if (method === "HEAD") {
-						res.end();
-						return;
-					}
-					res.end(html);
-					return;
-				}
-			}
-
-			const type = contentType(filePath);
-			res.writeHead(200, {
-				"Content-Type": type,
-				"Content-Length": stat.size,
-				"Cache-Control": "no-cache",
-			});
-			if (method === "HEAD") {
-				res.end();
-				return;
-			}
-			fs.createReadStream(filePath).pipe(res);
+			handleRequest(root, req, res);
 		} catch (err) {
-			res.writeHead(500);
-			res.end(err instanceof Error ? err.message : "Internal Server Error");
+			sendText(
+				res,
+				500,
+				err instanceof Error ? err.message : "Internal Server Error",
+			);
 		}
 	});
 }
@@ -264,7 +304,9 @@ function statusLine(): string | undefined {
 }
 
 export default function (pi: ExtensionAPI) {
-	const refreshStatus = (ctx: { ui: { setStatus: (id: string, text?: string) => void } }) => {
+	const refreshStatus = (ctx: {
+		ui: { setStatus: (id: string, text?: string) => void };
+	}) => {
 		ctx.ui.setStatus("pi-serve", statusLine());
 	};
 
