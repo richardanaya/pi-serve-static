@@ -1,4 +1,4 @@
-# pi-serve
+# pi-serve-static
 
 A pi extension that serves the current working directory over a local
 static HTTP server and opens it in your browser.
@@ -7,16 +7,16 @@ static HTTP server and opens it in your browser.
 
 ```bash
 # npm
-pi install npm:pi-serve
+pi install npm:pi-serve-static
 
 # git
-pi install git:github.com/richardanaya/pi-serve
+pi install git:github.com/richardanaya/pi-serve-static
 
 # local path
-pi install /absolute/path/to/pi-serve
+pi install /absolute/path/to/pi-serve-static
 
 # try once without installing
-pi -e npm:pi-serve
+pi -e npm:pi-serve-static
 ```
 
 ## Usage

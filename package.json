@@ -1,5 +1,5 @@
 {
-  "name": "pi-serve",
+  "name": "pi-serve-static",
   "version": "0.1.0",
   "description": "A pi extension that serves the current working directory over a local static HTTP server (/serve-start, /serve-stop)",
   "license": "MIT",
@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/richardanaya/pi-serve.git"
+    "url": "git+https://github.com/richardanaya/pi-serve-static.git"
   },
   "bugs": {
-    "url": "https://github.com/richardanaya/pi-serve/issues"
+    "url": "https://github.com/richardanaya/pi-serve-static/issues"
   },
-  "homepage": "https://github.com/richardanaya/pi-serve#readme",
+  "homepage": "https://github.com/richardanaya/pi-serve-static#readme",
   "pi": {
     "extensions": [
       "./index.ts"

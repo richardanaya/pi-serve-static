@@ -1,5 +1,5 @@
 /**
- * pi-serve — static file server for the session cwd.
+ * pi-serve-static — static file server for the session cwd.
  *
  * /serve-start  Start (or restart) a local static server on 127.0.0.1
  *               with an OS-assigned free port, then open the browser.
@@ -145,7 +145,7 @@ function directoryListing(dirPath: string, urlPath: string): string {
 <ul>
 ${rows.join("\n")}
 </ul>
-<footer>pi-serve · ${escapeHtml(dirPath)}</footer>
+<footer>pi-serve-static · ${escapeHtml(dirPath)}</footer>
 </body>
 </html>`;
 }
@@ -307,7 +307,7 @@ export default function (pi: ExtensionAPI) {
 	const refreshStatus = (ctx: {
 		ui: { setStatus: (id: string, text?: string) => void };
 	}) => {
-		ctx.ui.setStatus("pi-serve", statusLine());
+		ctx.ui.setStatus("pi-serve-static", statusLine());
 	};
 
 	pi.registerCommand("serve-start", {
