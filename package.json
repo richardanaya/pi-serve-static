@@ -1,7 +1,7 @@
 {
   "name": "pi-serve-static",
-  "version": "0.1.0",
-  "description": "A pi extension that serves the current working directory over a local static HTTP server (/serve-start, /serve-stop)",
+  "version": "0.2.0",
+  "description": "A pi extension that serves the cwd with live-server (live reload) via /serve-start and /serve-stop",
   "license": "MIT",
   "author": "Richard Anaya <richard.anaya@gmail.com>",
   "type": "module",
@@ -46,9 +46,15 @@
     "http",
     "preview",
     "browser",
-    "local-server"
+    "local-server",
+    "live-reload",
+    "hot-reload",
+    "live-server"
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "live-server": "^1.2.2"
   }
 }
